@@ -9,9 +9,7 @@ const MongoStore = require("connect-mongo")(session);
 const cors = require("cors");
 require("dotenv").config();
 
-const authRouter = require("./routes/auth.router");
-const usersRouter = require("./routes/users.router");
-const projectsRouter = require("./routes/projects.router");
+const userRouter = require("./routes/user-router");
 
 // MONGOOSE CONNECTION
 mongoose
@@ -58,10 +56,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // ROUTER MIDDLEWARE
-app.use("/auth", authRouter);
-
-app.use("/api/users", usersRouter);
-app.use("/api/projects", projectsRouter);
+app.use("/user", userRouter);
 
 // ERROR HANDLING
 //  Catch 404 and respond with error message
