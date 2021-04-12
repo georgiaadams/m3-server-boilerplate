@@ -14,25 +14,27 @@ router.get("/lists", async (req, res, next) => {
 });
 
 router.post("/lists/new", (req, res, next) => {
-  const { date, title, content } = req.body;
-  List.create({ date, title, content })
+  const { date, title, category } = req.body;
+  console.log({ date, title, category });
+  List.create({ date, title, category })
     .then((newList) => {
       res.status(201).json(newList);
     })
     .catch((err) => {
+      console.log(err);
       res.status(400).json(err);
     });
 });
 
 router.put("/lists/:id", (req, res, next) => {
   const { id } = req.params;
-  const { date, title, content } = req.body;
+  const { date, title, category } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400).json({ message: "Specified id is not valid" });
     return;
   }
-  List.findByIdAndUpdate(id, { date, title, content }, { new: true })
+  List.findByIdAndUpdate(id, { date, title, category }, { new: true })
     .then((updatedList) => {
       res.status(200).json(updatedList);
     })
