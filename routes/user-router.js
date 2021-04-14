@@ -2,13 +2,16 @@ const express = require("express");
 const router = express.Router();
 const List = require("../models/list-model.js");
 const mongoose = require("mongoose");
+const Item = require("../models/item-model.js");
+const { removeAllListeners } = require("../app.js");
 
 router.get("/lists", async (req, res, next) => {
   try {
-    const allTodos = await List.find();
-    res.json(allTodos);
+    const allLists = await List.find({});
+    res.json(allLists);
   } catch (error) {
-    res.status(404);
+    console.log(error);
+    res.status(500);
     res.json(error);
   }
 });
@@ -26,15 +29,66 @@ router.post("/lists/new", (req, res, next) => {
     });
 });
 
-router.put("/lists/:id", (req, res, next) => {
+router.post("/lists/:id", (req, res, next) => {
+  const { item, amount } = req.body;
   const { id } = req.params;
-  const { date, title, category } = req.body;
+  Item.create({ item, amount })
+    .then((newItem) => {
+      List.findByIdAndUpdate(
+        id,
+        { $push: { items: newItem._id } },
+        { new: true }
+      ).then((addedItems) => res.status(201).json(newItem));
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(400).json(err);
+    });
+});
+
+router.get("/lists/:id", async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: "Specified id is not valid" });
+      return;
+    }
+    const oneList = await List.findById(id).populate({
+      path: "items",
+      model: Item,
+    });
+    res.json(oneList);
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.put("/lists/edit/:id", (req, res, next) => {
+  const { id } = req.params;
+  const { title, category } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     res.status(400).json({ message: "Specified id is not valid" });
     return;
   }
   List.findByIdAndUpdate(id, { date, title, category }, { new: true })
+    .then((updatedList) => {
+      res.status(200).json(updatedList);
+    })
+    .catch((error) => {
+      res.status(400).json(error);
+    });
+});
+
+router.put("/lists/edit/:id", (req, res, next) => {
+  const { id } = req.params;
+  const { item, amount } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
+  List.findByIdAndUpdate(id, { item, amount }, { new: true })
     .then((updatedList) => {
       res.status(200).json(updatedList);
     })
@@ -58,9 +112,5 @@ router.delete("/lists/:id", async (req, res, next) => {
       res.status(400).json(error);
     });
 });
-
-// router.get("/foodsearch", async (req, res, next) => {});
-
-// router.get("/foodsearch/info", async (req, res, next) => {});
 
 module.exports = router;
