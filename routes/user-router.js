@@ -3,7 +3,6 @@ const router = express.Router();
 const List = require("../models/list-model.js");
 const mongoose = require("mongoose");
 const Item = require("../models/item-model.js");
-const { removeAllListeners } = require("../app.js");
 
 router.get("/lists", async (req, res, next) => {
   try {
@@ -71,7 +70,7 @@ router.put("/lists/edit/:id", (req, res, next) => {
     res.status(400).json({ message: "Specified id is not valid" });
     return;
   }
-  List.findByIdAndUpdate(id, { date, title, category }, { new: true })
+  List.findByIdAndUpdate(id, { title, category }, { new: true })
     .then((updatedList) => {
       res.status(200).json(updatedList);
     })
@@ -80,7 +79,7 @@ router.put("/lists/edit/:id", (req, res, next) => {
     });
 });
 
-router.put("/lists/edit/:id", (req, res, next) => {
+router.put("/items/edit/:id", (req, res, next) => {
   const { id } = req.params;
   const { item, amount } = req.body;
 
@@ -88,9 +87,9 @@ router.put("/lists/edit/:id", (req, res, next) => {
     res.status(400).json({ message: "Specified id is not valid" });
     return;
   }
-  List.findByIdAndUpdate(id, { item, amount }, { new: true })
-    .then((updatedList) => {
-      res.status(200).json(updatedList);
+  Item.findByIdAndUpdate(id, { item, amount }, { new: true })
+    .then((updatedItem) => {
+      res.status(200).json(updatedItem);
     })
     .catch((error) => {
       res.status(400).json(error);
